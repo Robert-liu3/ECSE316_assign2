@@ -1,4 +1,4 @@
-### cv2
+## cv2
 
 Install cv2 with this command:
 pip install opencv-python
