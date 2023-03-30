@@ -13,7 +13,7 @@ def main():
         case 5:
             model = sys.argv[2]
             filename = sys.argv[4]
-            mode_one(filename)
+            image_convert(filename)
             # print(model)
             # print(filename)
         case 3:  
@@ -24,14 +24,26 @@ def main():
         case _: 
             pass
 
-def FFT():
-    pass
+#very cool turkey algo
+def fft(da_list): 
+    n = len(da_list)
+    if n == 1:
+        return da_list
+    even = fft(da_list[::2])
+    odd = fft(da_list[1::2])
+    factor = np.exp(-2j * np.pi * np.arange(n) / n) #TODO CHANGE THIS LINE AND LINES UNDER
+    return np.concatenate([even + factor[:int(n/2)] * odd,
+                           even + factor[int(n/2):] * odd])
 
-def mode_one(image_name):
+
+
+def image_convert(image_name):
     img = cv2.imread(image_name, 0)
+
     cv2.imshow('damn_thats_an_image', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    return img
 
 
 if __name__ == '__main__':
