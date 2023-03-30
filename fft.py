@@ -37,6 +37,7 @@ def fft(da_list):
 
 
 
+
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
 
