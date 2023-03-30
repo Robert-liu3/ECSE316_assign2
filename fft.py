@@ -5,8 +5,7 @@ import numpy as np
 #parse commands
 def main():
     model = 1
-    filename = "moonlanding.png"
-    print("hello world")
+    filename = "images/moonlanding.png" #TODO Change this at the end to the root folder
     num_arg = len(sys.argv)
     print("number of arguments " + str(num_arg))
     
