@@ -34,7 +34,7 @@ def fft(da_list):
     factor = np.exp(-2j * np.pi * np.arange(n) / n) #TODO CHANGE THIS LINE AND LINES UNDER
     return np.concatenate([even + factor[:int(n/2)] * odd,
                            even + factor[int(n/2):] * odd])
-
+    
 
 
 
