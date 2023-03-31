@@ -1,6 +1,7 @@
 import sys
 import cv2
 import numpy as np
+import math
 
 #parse commands
 def main():
@@ -11,41 +12,157 @@ def main():
     
     match num_arg:
         case 5:
+            print("5 arguments found")
             model = sys.argv[2]
             filename = sys.argv[4]
-            image_convert(filename)
+            fft_2d(image_convert(filename))
             # print(model)
             # print(filename)
         case 3:  
+            print("3 arguments found")
             if (sys.argv[1] == "-m"):
                 model = sys.argv[2]
-            elif (sys.argv[2] == "-i"):
+            elif (sys.argv[1] == "-i"):
                 filename = sys.argv[2]
         case _: 
+            print("no arguments found")
             pass
+    da_int_model = int(model)
+    match da_int_model:
+        case 1:
+            print("entering model 1")
+            print(fft_2d(image_convert(filename)))
+            print(np.fft.fft2(image_convert(filename)))
+
+        case _:
+            pass
+
+#
+#
+#
+#  FFT
+#
+#
+#
 
 #very cool turkey algo
 def fft(da_list): 
     n = len(da_list)
+    #base case
     if n == 1:
         return da_list
+    
+    #creating two lists for both even and odd indices
     even = fft(da_list[::2])
     odd = fft(da_list[1::2])
-    factor = np.exp(-2j * np.pi * np.arange(n) / n) #TODO CHANGE THIS LINE AND LINES UNDER
-    return np.concatenate([even + factor[:int(n/2)] * odd,
-                           even + factor[int(n/2):] * odd])
     
+    numerator = -2j*np.pi*np.arange(n)
+    factor = np.exp(numerator/ n)
+    factor = np.concatenate([factor, factor])
+    result = np.concatenate([even + factor[:int(n/2)] * odd,
+                           even + factor[int(n/2):] * odd])
+    return result
+
+def fft_2d(arr):
+    # obtain rows and columns to loop over
+    shape = arr.shape
+    rows = shape[0]
+    cols = shape[1]
+
+    result = np.empty(shape, dtype=np.complex_)
+
+    # get intermediate matrix
+    # for each row, perform a FFT on it
+    for i in range(rows):
+        inter = fft(arr[i])
+        result[i] = inter
+    
+    # perform a second FFT on transpose
+    result = result.T
+    for i in range(cols):
+        inter = fft(result[i])
+        result[i] = inter
+
+    # transpose again to get correct shape
+    result = result.T 
+    
+    return result
+
+#
+#
+#
+#  DFT
+#
+#
+#
+    
+# takes in a 1D numpy array and performs a DFT on it
+def dft(arr):
+    n = arr.shape[0] # first item in tuple is the number
+    result = np.empty(n, dtype=np.complex_)
+
+    for i in range(n):
+        dft_sum = 0 # reset the sum at each iteration of the loop
+        for k in range(n):
+            xn = arr[k]
+            exp = np.exp((-2j * math.pi * i * k) / n)
+            dft_sum = dft_sum + (xn * exp)
+        result[i] = np.round(dft_sum, 9) # round to 9 decimal places and add to resultant vector
+
+    return result # returns as a numpy array
+
+# takes in a 2D numpy array and perform a DFT on it
+def dft_2d(arr):
+    # obtain rows and columns to loop over
+    shape = arr.shape
+    rows = shape[0]
+    cols = shape[1]
+
+    result = np.empty(shape, dtype=np.complex_)
+
+    # get intermediate matrix
+    # for each row, perform a DFT on it
+    for i in range(rows):
+        inter = dft(arr[i])
+        result[i] = inter
+    
+    # perform a second DFT on transpose
+    result = result.T
+    for i in range(cols):
+        inter = dft(result[i])
+        result[i] = inter
+
+    # transpose again to get correct shape
+    result = result.T 
+    
+    return result
+
 
 
 
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
 
-    cv2.imshow('damn_thats_an_image', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('damn_thats_an_image', img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     return img
 
 
 if __name__ == '__main__':
     main()
+
+
+    #ABIOLA'S TESTS
+    #arr = [[1.2+1j, 2.4, 3, 4], [2, 1, 0, 2]]
+    # print(np.fft.fft2(arr))
+    # print(fft_2d(np.asarray(arr)))
+
+
+    # ks = np.array(np.arange(3))
+
+    # n = np.array(np.arange(3))
+    # kn = ks.T * n
+    # first_exponens = np.exp(-1j * 2 * math.pi * kn / 3)
+    # a = np.matmul(np.asarray([1, 2, 3]), first_exponens.T)
+    # print(a)
