@@ -26,10 +26,10 @@ def main():
         case _: 
             pass
 
-# takes in a numpy array and performs a DFT on it
+# takes in a 1D numpy array and performs a DFT on it
 def dft(arr):
     n = arr.shape[0] # first item in tuple is the number
-    result = []
+    result = np.empty(n, dtype=np.complex_)
 
     for i in range(n):
         dft_sum = 0 # reset the sum at each iteration of the loop
@@ -37,9 +37,35 @@ def dft(arr):
             xn = arr[k]
             exp = np.exp((-2j * math.pi * i * k) / n)
             dft_sum = dft_sum + (xn * exp)
-        result.append(np.ma.round(dft_sum, 9)) # round to 9 decimal places to match numpy's internal function
+        result[i] = np.round(dft_sum, 9) # round to 9 decimal places and add to resultant vector
 
-    return np.asarray(result) # returns as a numpy array
+    return result # returns as a numpy array
+
+# takes in a 2D numpy array and perform a DFT on it
+def dft_2d(arr):
+    # obtain rows and columns to loop over
+    shape = arr.shape
+    rows = shape[0]
+    cols = shape[1]
+
+    result = np.empty(shape, dtype=np.complex_)
+
+    # get intermediate matrix
+    # for each row, perform a DFT on it
+    for i in range(rows):
+        inter = dft(arr[i])
+        result[i] = inter
+    
+    # perform a second DFT on transpose
+    result = result.T
+    for i in range(cols):
+        inter = dft(result[i])
+        result[i] = inter
+
+    # transpose again to get correct shape
+    result = result.T 
+    
+    return result
 
 def FFT():
     pass
@@ -53,9 +79,9 @@ def mode_one(image_name):
 
 if __name__ == '__main__':
     # main()
-    arr = [2, 1, 3]
-    print(np.fft.fft(arr))
-    print(dft(np.asarray(arr)))
+    arr = [[1.2+1j, 2.4, 3, 4], [2, 1, 0, 2]]
+    print(np.fft.fft2(arr))
+    print(dft_2d(np.asarray(arr)))
     # ks = np.array(np.arange(3))
 
     # n = np.array(np.arange(3))
