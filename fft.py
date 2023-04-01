@@ -57,10 +57,9 @@ def fft(da_list):
     odd = fft(da_list[1::2])
     
     numerator = -2j*np.pi*np.arange(n)
-    factor = np.exp(numerator/ n)
-    factor = np.concatenate([factor, factor])
-    result = np.concatenate([even + factor[:int(n/2)] * odd,
-                           even + factor[int(n/2):] * odd])
+    f = np.exp(numerator/ n)
+    result = np.concatenate([even + f[:int(n/2)] * odd,
+                           even + f[int(n/2):] * odd])
     return result
 
 def fft_2d(arr):
@@ -142,11 +141,11 @@ def dft_2d(arr):
 
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
-
+    
     # cv2.imshow('damn_thats_an_image', img)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    return img
+    return np.array(img)
 
 
 if __name__ == '__main__':
