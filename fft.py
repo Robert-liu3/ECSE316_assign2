@@ -15,9 +15,6 @@ def main():
             print("5 arguments found")
             model = sys.argv[2]
             filename = sys.argv[4]
-            arr = image_convert(filename)
-            arr = np.pad(arr, [(0, 1) if n % 2 != 0 else (0, 0) for n in arr.shape], mode='constant')
-            fft_2d(arr)
             # print(model)
             # print(filename)
         case 3:  
@@ -65,6 +62,7 @@ def fft(da_list):
     return result
 
 def fft_2d(arr):
+    print("Entering fft_2d")
     # obtain rows and columns to loop over
     shape = arr.shape
     rows = shape[0]
@@ -143,11 +141,15 @@ def dft_2d(arr):
 
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
-    
+    arr = np.array(img)
+    # pad the array with zeros to the nearest power of 2
+    n = 2**int(np.ceil(np.log2(max(arr.shape))))
+    pad_width = [(0, n-arr.shape[0]), (0, n-arr.shape[1])]
+    arr = np.pad(arr, pad_width, 'constant')
     # cv2.imshow('damn_thats_an_image', img)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    return np.array(img)
+    return arr
 
 
 if __name__ == '__main__':
