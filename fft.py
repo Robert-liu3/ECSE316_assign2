@@ -15,7 +15,9 @@ def main():
             print("5 arguments found")
             model = sys.argv[2]
             filename = sys.argv[4]
-            fft_2d(image_convert(filename))
+            arr = image_convert(filename)
+            arr = np.pad(arr, [(0, 1) if n % 2 != 0 else (0, 0) for n in arr.shape], mode='constant')
+            fft_2d(arr)
             # print(model)
             # print(filename)
         case 3:  
@@ -50,7 +52,7 @@ def fft(da_list):
     n = len(da_list)
     #base case
     if n == 1:
-        return da_list
+        return dft(da_list)
     
     #creating two lists for both even and odd indices
     even = fft(da_list[::2])
