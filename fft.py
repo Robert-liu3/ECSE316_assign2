@@ -58,6 +58,7 @@ def fft(da_list):
     f = np.exp(numerator/ n)
     result = np.concatenate([even + f[:int(n/2)] * odd,
                            even + f[int(n/2):] * odd])
+    result = np.round(result, 9)
     return result
 
 def fft_2d(arr):
@@ -85,6 +86,54 @@ def fft_2d(arr):
     result = result.T 
     
     return result
+
+# FFT inverse, uses level parameter to ensure final result isn't scaled down too much
+def fft_inverse(arr, level=0):
+    n = len(arr)
+    if n == 1:
+        return dft_inverse(arr)
+    
+    even = fft_inverse(arr[::2], level+1)
+    odd = fft_inverse(arr[1::2], level+1)
+    
+    numerator = 2j*np.pi*np.arange(n)
+    f = np.exp(numerator / n)
+    result = np.concatenate([even + f[:int(n/2)] * odd,
+                           even + f[int(n/2):] * odd])
+    
+    result = np.round(result, 9)
+
+    # Once the original level is reached, scale the final result by n
+    if level == 0:
+        result = result / n
+    
+    return result
+
+def fft_2d_inverse(arr):
+        # obtain rows and columns to loop over
+    shape = arr.shape
+    rows = shape[0]
+    cols = shape[1]
+
+    result = np.empty(shape, dtype=np.complex_)
+
+    # get intermediate matrix
+    # for each row, perform a DFT on it
+    for i in range(rows):
+        inter = fft_inverse(arr[i])
+        result[i] = inter
+    
+    # perform a second DFT on transpose
+    result = result.T
+    for i in range(cols):
+        inter = fft_inverse(result[i])
+        result[i] = inter
+
+    # transpose again to get correct shape
+    result = result.T 
+    
+    return result
+    
 
 #
 #
@@ -135,8 +184,21 @@ def dft_2d(arr):
     
     return result
 
+# inverse dft
+def dft_inverse(arr):
+    n = arr.shape[0] # first item in tuple is the number
+    result = np.empty(n, dtype=np.complex_)
 
+    for i in range(n):
+        dft_sum = 0 # reset the sum at each iteration of the loop
+        for k in range(n):
+            xn = arr[k]
+            exp = np.exp((2j * math.pi * i * k) / n) # flip sign of complex num.
+            dft_sum = dft_sum + (xn * exp)
+        dft_sum = dft_sum/n # divide by n according equation
+        result[i] = np.round(dft_sum, 9) # round to 9 decimal places and add to resultant vector
 
+    return result # returns as a numpy array
 
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
@@ -152,13 +214,15 @@ def image_convert(image_name):
 
 
 if __name__ == '__main__':
-    main()
+    # main()
 
 
     #ABIOLA'S TESTS
-    #arr = [[1.2+1j, 2.4, 3, 4], [2, 1, 0, 2]]
-    # print(np.fft.fft2(arr))
-    # print(fft_2d(np.asarray(arr)))
+    arr = np.random.rand(2**9, 2)
+    print(np.fft.ifft2(arr))
+    print(fft_2d_inverse(arr))
+    # print(dft(arr))
+    # print(fft(arr))
 
 
     # ks = np.array(np.arange(3))
