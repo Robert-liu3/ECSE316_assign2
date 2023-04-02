@@ -1,7 +1,10 @@
 import sys
 import cv2
 import numpy as np
+from PIL import Image
 import math
+import matplotlib.pyplot as plt
+import matplotlib.colors as clr
 
 #parse commands
 def main():
@@ -30,8 +33,23 @@ def main():
     match da_int_model:
         case 1:
             print("entering model 1")
-            print(fft_2d(image_convert(filename)))
-            print(np.fft.fft2(image_convert(filename)))
+            arr = image_convert(filename)
+            fft_2d_img = fft_2d(arr)
+            print(fft_2d_img)
+            print(np.fft.fft2(arr))
+            fft_2d_img = np.real(fft_2d_img)
+
+
+            fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+            axs[0].imshow(arr, cmap='rainbow')
+            axs[0].set_title('OG')
+            axs[1].imshow(np.abs(fft_2d_img), norm=clr.LogNorm(vmin=5), cmap='rainbow')
+            axs[1].set_title('2D FFT LOG')
+            plt.show()
+        case 3:
+            c_arr = fft_2d(image_convert(filename))
+            c_img = Image.fromarray(c_arr.astype(np.uint8))
+            c_img.save("outputimage/model_3_image.jpg")
         case _:
             pass
 
