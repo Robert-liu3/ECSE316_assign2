@@ -2,6 +2,7 @@ import sys
 import cv2
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 #parse commands
 def main():
@@ -24,17 +25,51 @@ def main():
             elif (sys.argv[1] == "-i"):
                 filename = sys.argv[2]
         case _: 
-            print("no arguments found")
+            print("Error: invalid arguments found")
             pass
     da_int_model = int(model)
     match da_int_model:
         case 1:
-            print("entering model 1")
+            print("Entering model 1")
             print(fft_2d(image_convert(filename)))
             print(np.fft.fft2(image_convert(filename)))
             # arr = np.random.rand(2**10)
             # print(dft(arr))
             # print(DFT(arr))
+        case 2:
+            print("Entering mode 2")
+            # Denoise the original image
+            original = image_convert(filename)
+            # FFT first
+            fft_img = fft_2d(original.copy())
+
+            # Set high frequencies to zero
+            # im_fft2 = fft_img.copy()
+
+            # keep_fraction = 0.01
+
+            # # Set r and c to be the number of rows and columns of the array.
+            # r, c = im_fft2.shape
+
+            # # Set to zero all rows with indices between r*keep_fraction and
+            # # r*(1-keep_fraction):
+            # im_fft2[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
+
+            # # Similarly with the columns:
+            # im_fft2[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
+
+            # fft_2d_img_inversed = fft_2d_inverse(im_fft2).real
+
+            # fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+            # ax[0].imshow(original,  # norm=LogNorm(),
+            #          cmap='gray',
+            #          interpolation='none')
+            # ax[1].imshow(fft_2d_img_inversed,  # norm=LogNorm(),
+            #          cmap='gray',
+            #          interpolation='none')
+
+            # plt.show()
+
         case _:
             pass
 
@@ -101,7 +136,7 @@ def fft_2d(arr):
 # FFT inverse, uses level parameter to ensure final result isn't scaled down too much
 def fft_inverse(arr, level=0):
     n = len(arr)
-    if n == 1:
+    if n <= 8:
         return dft_inverse(arr)
     
     even = fft_inverse(arr[::2], level+1)
@@ -165,21 +200,29 @@ def dft_inverse(arr):
     result = np.round(result, 9)    
     return result
 
+# Method to convert input image to numpy matrix using cv2
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
-    arr = np.array(img)
-    # pad the array with zeros to the nearest power of 2
-    n = 2**int(np.ceil(np.log2(max(arr.shape))))
-    pad_width = [(0, n-arr.shape[0]), (0, n-arr.shape[1])]
-    arr = np.pad(arr, pad_width, 'constant')
-    # cv2.imshow('damn_thats_an_image', img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    # resize the image array to one that has size near a power of 2
+    n = 2**int(np.ceil(np.log2(max(img.shape))))
+
+    arr = cv2.resize(img, (n, n))
     return arr
 
 
 if __name__ == '__main__':
     main()
+
+    # original = image_convert("images/moonlanding.png")
+    # fft_2d(original)
+
+    # fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+    # ax[0].imshow(original,  # norm=LogNorm(),
+    #     cmap='gray',
+    #     interpolation='none')
+    
+    # plt.show()
+
 
     # ABIOLA'S TESTS
     # arr = np.random.rand(2**5)
