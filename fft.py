@@ -32,7 +32,6 @@ def main():
             print("entering model 1")
             print(fft_2d(image_convert(filename)))
             print(np.fft.fft2(image_convert(filename)))
-
         case _:
             pass
 
