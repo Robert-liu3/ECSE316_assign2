@@ -32,8 +32,14 @@ def main():
             print("entering model 1")
             print(fft_2d(image_convert(filename)))
             print(np.fft.fft2(image_convert(filename)))
+            # arr = np.random.rand(2**10)
+            # print(dft(arr))
+            # print(DFT(arr))
         case _:
             pass
+
+
+'''Optimized functions below'''
 
 # Helper method to reduce copy pasted code for 2d functions
 # Will take in the array and function to work with and return transformed numpy array
@@ -43,7 +49,7 @@ def run_2d(func, arr):
     rows = shape[0]
     cols = shape[1]
 
-    result = np.empty(shape, dtype=np.complex_)
+    result = np.zeros(shape, dtype=np.complex_)
 
     # get intermediate matrix
     # for each row, perform a FFT on it
@@ -72,8 +78,9 @@ def run_2d(func, arr):
 #very cool turkey algo
 def fft(da_list): 
     n = len(da_list)
-    #base case
-    if n == 1:
+    
+    #base case (runs with set threshold of 8 in order to optimize method calls)
+    if n <= 8:
         return dft(da_list)
     
     #creating two lists for both even and odd indices
@@ -83,12 +90,11 @@ def fft(da_list):
     numerator = -2j*np.pi*np.arange(n)
     f = np.exp(numerator/ n)
     result = np.concatenate([even + f[:int(n/2)] * odd,
-                           even + f[int(n/2):] * odd])
+                        even + f[int(n/2):] * odd])
     result = np.round(result, 9)
     return result
 
 def fft_2d(arr):
-    print("Entering fft_2d")
     # Call helper with fft method as input
     return run_2d(fft, arr)
 
@@ -125,21 +131,20 @@ def fft_2d_inverse(arr):
 #
 #
 #
-    
+  
 # takes in a 1D numpy array and performs a DFT on it
 def dft(arr):
     n = arr.shape[0] # first item in tuple is the number
     result = np.empty(n, dtype=np.complex_)
 
     for i in range(n):
-        dft_sum = 0 # reset the sum at each iteration of the loop
-        for k in range(n):
-            xn = arr[k]
-            exp = np.exp((-2j * math.pi * i * k) / n)
-            dft_sum = dft_sum + (xn * exp)
-        result[i] = np.round(dft_sum, 9) # round to 9 decimal places and add to resultant vector
+        # compute exponent for transform (-2pi * i * k which is represented with np.arange each time)
+        e = np.exp((-2j * math.pi * i * np.arange(n)) / n)
+        result[i] = np.dot(arr, e) # the summation is simply a dot product of the original array with the exponent calc. above
 
-    return result # returns as a numpy array
+    # round to 9 decimal places similar to numpy method
+    result = np.round(result, 9)    
+    return result
 
 # takes in a 2D numpy array and perform a DFT on it
 def dft_2d(arr):
@@ -151,15 +156,14 @@ def dft_inverse(arr):
     result = np.empty(n, dtype=np.complex_)
 
     for i in range(n):
-        dft_sum = 0 # reset the sum at each iteration of the loop
-        for k in range(n):
-            xn = arr[k]
-            exp = np.exp((2j * math.pi * i * k) / n) # flip sign of complex num.
-            dft_sum = dft_sum + (xn * exp)
-        dft_sum = dft_sum/n # divide by n according equation
-        result[i] = np.round(dft_sum, 9) # round to 9 decimal places and add to resultant vector
+        # compute exponent for transform (-2pi * i * k which is represented with np.arange each time)
+        e = np.exp((2j * math.pi * i * np.arange(n)) / n)
+        result[i] = np.dot(arr, e) # the summation is simply a dot product of the original array with the exponent calc. above
 
-    return result # returns as a numpy array
+    result = result / n
+    # round to 9 decimal places similar to numpy method
+    result = np.round(result, 9)    
+    return result
 
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
@@ -175,15 +179,15 @@ def image_convert(image_name):
 
 
 if __name__ == '__main__':
-    # main()
+    main()
 
-
-    #ABIOLA'S TESTS
-    arr = np.random.rand(2**9, 2)
-    print(np.fft.ifft2(arr))
-    print(fft_2d_inverse(arr))
-    # print(dft(arr))
-    # print(fft(arr))
+    # ABIOLA'S TESTS
+    # arr = np.random.rand(2**5)
+    # print(np.fft.ifft(arr))
+    # print(dft_inverse(arr))
+    # # print(fft_2d(arr))
+    # print(dft_2d(arr))
+    # print(fft_2d(arr))
 
 
     # ks = np.array(np.arange(3))
