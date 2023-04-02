@@ -35,6 +35,32 @@ def main():
         case _:
             pass
 
+# Helper method to reduce copy pasted code for 2d functions
+# Will take in the array and function to work with and return transformed numpy array
+def run_2d(func, arr):
+    # obtain rows and columns to loop over
+    shape = arr.shape
+    rows = shape[0]
+    cols = shape[1]
+
+    result = np.empty(shape, dtype=np.complex_)
+
+    # get intermediate matrix
+    # for each row, perform a FFT on it
+    for i in range(rows):
+        inter = func(arr[i])
+        result[i] = inter
+    
+    # perform a second FFT on transpose
+    result = result.T
+    for i in range(cols):
+        inter = func(result[i])
+        result[i] = inter
+
+    # transpose again to get correct shape
+    result = result.T 
+    
+    return result
 #
 #
 #
@@ -63,29 +89,8 @@ def fft(da_list):
 
 def fft_2d(arr):
     print("Entering fft_2d")
-    # obtain rows and columns to loop over
-    shape = arr.shape
-    rows = shape[0]
-    cols = shape[1]
-
-    result = np.empty(shape, dtype=np.complex_)
-
-    # get intermediate matrix
-    # for each row, perform a FFT on it
-    for i in range(rows):
-        inter = fft(arr[i])
-        result[i] = inter
-    
-    # perform a second FFT on transpose
-    result = result.T
-    for i in range(cols):
-        inter = fft(result[i])
-        result[i] = inter
-
-    # transpose again to get correct shape
-    result = result.T 
-    
-    return result
+    # Call helper with fft method as input
+    return run_2d(fft, arr)
 
 # FFT inverse, uses level parameter to ensure final result isn't scaled down too much
 def fft_inverse(arr, level=0):
@@ -110,29 +115,7 @@ def fft_inverse(arr, level=0):
     return result
 
 def fft_2d_inverse(arr):
-        # obtain rows and columns to loop over
-    shape = arr.shape
-    rows = shape[0]
-    cols = shape[1]
-
-    result = np.empty(shape, dtype=np.complex_)
-
-    # get intermediate matrix
-    # for each row, perform a DFT on it
-    for i in range(rows):
-        inter = fft_inverse(arr[i])
-        result[i] = inter
-    
-    # perform a second DFT on transpose
-    result = result.T
-    for i in range(cols):
-        inter = fft_inverse(result[i])
-        result[i] = inter
-
-    # transpose again to get correct shape
-    result = result.T 
-    
-    return result
+    return run_2d(fft_inverse, arr)
     
 
 #
@@ -160,29 +143,7 @@ def dft(arr):
 
 # takes in a 2D numpy array and perform a DFT on it
 def dft_2d(arr):
-    # obtain rows and columns to loop over
-    shape = arr.shape
-    rows = shape[0]
-    cols = shape[1]
-
-    result = np.empty(shape, dtype=np.complex_)
-
-    # get intermediate matrix
-    # for each row, perform a DFT on it
-    for i in range(rows):
-        inter = dft(arr[i])
-        result[i] = inter
-    
-    # perform a second DFT on transpose
-    result = result.T
-    for i in range(cols):
-        inter = dft(result[i])
-        result[i] = inter
-
-    # transpose again to get correct shape
-    result = result.T 
-    
-    return result
+    return run_2d(dft, arr)
 
 # inverse dft
 def dft_inverse(arr):
