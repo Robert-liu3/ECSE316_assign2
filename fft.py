@@ -45,8 +45,12 @@ def main():
 
             #creating the graph
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+
+            #OG image
             axs[0].imshow(img_arr1, cmap='gray')
             axs[0].set_title('OG image') #TODO change the name lmao
+
+            #2d fft image
             axs[1].imshow(np.abs(fft_2d_img_1), norm=clr.LogNorm(vmin=5), cmap='gray')
             axs[1].set_title('2D FFT LOG')
             plt.show()
@@ -86,28 +90,41 @@ def main():
         case 3:
             #perform fft 2d on array
             img_arr3 = image_convert(filename)
-            fft_2d_img_3 = fft_2d(img_arr3)
+
+            #fft_2d_img_3 = fft_2d(img_arr3)
 
             #convert to float
-            fft_2d_img_3 = np.real(fft_2d_img_3)
+            fft_2d_img_3 = np.real(np.fft.fft2(img_arr3))
 
             #creating the graph
             fig, axs = plt.subplots(2, 3, figsize=(10, 10))
             fig.suptitle('Compressed images at different levels')
+            #OG image
             axs[0, 0].imshow(img_arr3, cmap='gray')
             axs[0, 0].set_title('Original Image')
+            #2d fft image
             axs[0, 1].imshow(np.abs(fft_2d_img_3), norm=clr.LogNorm(vmin=5), cmap='gray')
             axs[0, 1].set_title('2D FFT LOG')
 
             c_percentage = [0, 25, 50, 65, 80, 95]
+
             for i, l in enumerate(c_percentage):
                 c_fft = fft_2d_img_3.copy()
-                # set a percentage of the coefficients to zero based on the compression level
+
+                # percentage setting
                 c_fft[int(c_fft.shape[0] * l / 100):, :] = 0
                 c_fft[:, int(c_fft.shape[1] * l / 100):] = 0
+
+                #run inverse
+                #c_img = fft_2d_inverse(c_fft)
+
+                #convert to float
                 c_img = np.fft.ifft2(c_fft).real
-                axs[i//3, i%3].imshow(c_img, cmap='gray')
-                axs[i//3, i%3].set_title(str(l) + '% Compression')
+
+                row = (i + 1) // 3
+                col = (i + 1) % 3
+                axs[(i + 1)//3, (i + 1)%3].imshow(c_img, cmap='gray')
+                axs[(i + 1)//3, (i + 1)%3].set_title(str(l) + '% Compression')
 
             plt.show()
             # c_img = Image.fromarray(c_arr.astype(np.uint8))
