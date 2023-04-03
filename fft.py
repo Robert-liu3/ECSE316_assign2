@@ -50,6 +50,8 @@ def main():
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
             axs[0].imshow(original, cmap='gray')
             axs[0].set_title('OG image') #TODO change the name lmao
+
+            #2d fft image
             axs[1].imshow(np.abs(fft_2d_img_1), norm=clr.LogNorm(vmin=5), cmap='gray')
             axs[1].set_title('2D FFT LOG')
             plt.show()
@@ -65,7 +67,7 @@ def main():
 
             # Set high frequencies to zero
             filter_coeff = 0.7 # fraction of values to set to zero
-            n_zero = int(filter_coeff * fft_img.shape[0])
+            n_zero = round(filter_coeff * fft_img.shape[0])
 
             # Flatten into a 1D array
             fft_flat = fft_img.flatten()
@@ -103,34 +105,52 @@ def main():
             plt.show()
 
         case 3:
+            print("Entering mode 3")
+            original = cv2.imread(filename, 0)
             #perform fft 2d on array
             img_arr3 = image_convert(filename)
-            fft_2d_img_3 = fft_2d(img_arr3)
 
             #convert to float
-            fft_2d_img_3 = np.real(fft_2d_img_3)
+            fft_2d_img_3 = np.fft.fft2(img_arr3)
 
             #creating the graph
             fig, axs = plt.subplots(2, 3, figsize=(10, 10))
             fig.suptitle('Compressed images at different levels')
-            axs[0, 0].imshow(img_arr3, cmap='gray')
-            axs[0, 0].set_title('Original Image')
-            axs[0, 1].imshow(np.abs(fft_2d_img_3), norm=clr.LogNorm(vmin=5), cmap='gray')
-            axs[0, 1].set_title('2D FFT LOG')
 
-            c_percentage = [0, 25, 50, 65, 80, 95]
+            c_percentage = [0, 0.25, 0.5, 0.65, 0.8, 0.95]
+
             for i, l in enumerate(c_percentage):
-                c_fft = fft_2d_img_3.copy()
-                # set a percentage of the coefficients to zero based on the compression level
-                c_fft[int(c_fft.shape[0] * l / 100):, :] = 0
-                c_fft[:, int(c_fft.shape[1] * l / 100):] = 0
-                c_img = np.fft.ifft2(c_fft).real
-                axs[i//3, i%3].imshow(c_img, cmap='gray')
-                axs[i//3, i%3].set_title(str(l) + '% Compression')
+                c_fft = fft_2d_img_3.copy() # copy over the transformed image each iteration
 
+                # Similar process to mode 2 of altering
+                c_fft_flat = np.abs(c_fft).flatten()
+
+                n_zero = round((1-l) * c_fft.shape[0])
+
+                largest_indices = c_fft_flat.argsort()[-n_zero:]
+
+                x_idx, y_idx = np.unravel_index(largest_indices, c_fft.shape)
+
+                # Loop through the arrays and set each matching index (high frequencies) to 0
+                for x, y in zip(x_idx, y_idx):
+                    c_fft[x][y] = 0
+
+                #run inverse
+                #c_img = fft_2d_inverse(c_fft).real
+
+                #convert to float
+                c_img = np.fft.ifft2(c_fft).real
+
+                row = i // 3
+                col = i % 3
+
+                np.savetxt(f"Compression level {l}", c_img, delimiter=",")
+
+                c_img = cv2.resize(c_img, original.shape[::-1]) # resize to match original image's shapes
+                axs[row, col].imshow(c_img, cmap='gray')
+                axs[row, col].set_title(str(l * 100) + '% Compression')
+                
             plt.show()
-            # c_img = Image.fromarray(c_arr.astype(np.uint8))
-            # c_img.save("outputimage/model_3_image.jpg")
 
         case _:
             pass
@@ -281,40 +301,12 @@ def dft_inverse(arr):
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
     # resize the image array to one that has size near a power of 2
-    n = 2**int(np.ceil(np.log2(img.shape[0])))
-    a = 2**int(np.ceil(np.log2(img.shape[1])))
+    r = 2**int(np.ceil(np.log2(img.shape[0])))
+    c = 2**int(np.ceil(np.log2(img.shape[1])))
 
-    arr = cv2.resize(img, (n, a))
+    arr = cv2.resize(img, (c, r))
     return arr
 
 
 if __name__ == '__main__':
     main()
-
-    # original = image_convert("images/moonlanding.png")
-    # fft_2d(original)
-
-    # fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
-    # ax[0].imshow(original,  # norm=LogNorm(),
-    #     cmap='gray',
-    #     interpolation='none')
-    
-    # plt.show()
-
-
-    # ABIOLA'S TESTS
-    # arr = np.random.rand(2**5)
-    # print(np.fft.ifft(arr))
-    # print(dft_inverse(arr))
-    # # print(fft_2d(arr))
-    # print(dft_2d(arr))
-    # print(fft_2d(arr))
-
-
-    # ks = np.array(np.arange(3))
-
-    # n = np.array(np.arange(3))
-    # kn = ks.T * n
-    # first_exponens = np.exp(-1j * 2 * math.pi * kn / 3)
-    # a = np.matmul(np.asarray([1, 2, 3]), first_exponens.T)
-    # print(a)
