@@ -9,7 +9,7 @@ import matplotlib.colors as clr
 #parse commands
 def main():
     model = 1
-    filename = "images/moonlanding.png" #TODO Change this at the end to the root folder
+    filename = "images/moonlanding.png" # default
     num_arg = len(sys.argv)
     
     match num_arg:
@@ -49,7 +49,7 @@ def main():
             #creating the graph
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
             axs[0].imshow(original, cmap='gray')
-            axs[0].set_title('OG image') #TODO change the name lmao
+            axs[0].set_title('Original Image')
 
             #2d fft image
             axs[1].imshow(np.abs(fft_2d_img_1), norm=clr.LogNorm(vmin=5), cmap='gray')
