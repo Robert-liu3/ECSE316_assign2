@@ -11,7 +11,6 @@ def main():
     model = 1
     filename = "images/moonlanding.png" #TODO Change this at the end to the root folder
     num_arg = len(sys.argv)
-    print("number of arguments " + str(num_arg))
     
     match num_arg:
         case 5:
@@ -28,61 +27,81 @@ def main():
                 filename = sys.argv[2]
         case _: 
             print("Error: invalid arguments found")
-            pass
+            quit()
     da_int_model = int(model)
     match da_int_model:
         case 1:
-            print("entering model 1")
-            #performing ftt 2d on the array
+            print("Entering model 1")
+            #performing fft 2d on the array
+            original = cv2.imread(filename, 0) # get original copy of image for displaying and resizing later
+
             img_arr1 = image_convert(filename)
             fft_2d_img_1 = fft_2d(img_arr1)
 
-            print(fft_2d_img_1)
-            print(np.fft.fft2(img_arr1))
+            # Debugging
+            # print(fft_2d_img_1)
+            # print(np.fft.fft2(img_arr1))
 
             #convert to float
             fft_2d_img_1 = np.real(fft_2d_img_1)
+            fft_2d_img_1 = cv2.resize(fft_2d_img_1, original.shape[::-1])
 
             #creating the graph
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-            axs[0].imshow(img_arr1, cmap='gray')
+            axs[0].imshow(original, cmap='gray')
             axs[0].set_title('OG image') #TODO change the name lmao
             axs[1].imshow(np.abs(fft_2d_img_1), norm=clr.LogNorm(vmin=5), cmap='gray')
             axs[1].set_title('2D FFT LOG')
             plt.show()
+
         case 2:
             print("Entering mode 2")
-            # Denoise the original image
-            original = image_convert(filename)
+            original = cv2.imread(filename, 0) # get original copy of image for displaying and resizing later
+
+            # Resize image to allow FFT to work
+            resized = image_convert(filename)
             # FFT first
-            fft_img = fft_2d(original.copy())
+            fft_img = fft_2d(resized.copy())
 
             # Set high frequencies to zero
-            # im_fft2 = fft_img.copy()
+            filter_coeff = 0.7 # fraction of values to set to zero
+            n_zero = int(filter_coeff * fft_img.shape[0])
 
-            # keep_fraction = 0.01
+            # Flatten into a 1D array
+            fft_flat = fft_img.flatten()
 
-            # # Set r and c to be the number of rows and columns of the array.
-            # r, c = im_fft2.shape
+            # Get n indices corresponding to largest values in the multi-d array
+            # Argsort puts them in the last indices
+            largest_indices = fft_flat.argsort()[-n_zero:]
 
-            # # Set to zero all rows with indices between r*keep_fraction and
-            # # r*(1-keep_fraction):
-            # im_fft2[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
+            # convert into index arrays to set to zero
+            x_idx, y_idx = np.unravel_index(largest_indices, fft_img.shape)
 
-            # # Similarly with the columns:
-            # im_fft2[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
+            # Loop through the arrays and set each matching index (high frequencies) to 0
+            for x, y, in zip(x_idx, y_idx):
+                fft_img[x][y] = 0
 
-            # fft_2d_img_inversed = fft_2d_inverse(im_fft2).real
+            # Get only real portions of the transformed image, otherwise matplot throws error
+            fft_2d_img_inversed = fft_2d_inverse(fft_img).real
+            fft_2d_img_inversed = cv2.resize(fft_2d_img_inversed, original.shape[::-1]) # resize back to original photo's size
 
-            # fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
-            # ax[0].imshow(original,  # norm=LogNorm(),
-            #          cmap='gray',
-            #          interpolation='none')
-            # ax[1].imshow(fft_2d_img_inversed,  # norm=LogNorm(),
-            #          cmap='gray',
-            #          interpolation='none')
+            # Printing non-zero coeff. info
+            print("Non-zeros: " + str(int((1-filter_coeff) * fft_img.shape[0])))
+            print("Fraction of non-zeros: " + str(round((1 - filter_coeff), 2)))
 
-            # plt.show()
+            # Plotting the images
+            _, axis = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+            axis[0].imshow(original,  # norm=LogNorm(),
+                     cmap='gray',
+                     interpolation='none')
+            axis[0].set_title("Original")
+            axis[1].imshow(fft_2d_img_inversed,  # norm=LogNorm(),
+                     cmap='gray',
+                     interpolation='none')
+            axis[1].set_title("Denoised")
+
+            plt.show()
+
         case 3:
             #perform fft 2d on array
             img_arr3 = image_convert(filename)
@@ -115,6 +134,21 @@ def main():
 
         case _:
             pass
+
+'''Naive implementations'''
+def dft_naive(arr):
+    n = arr.shape[0] # first item in tuple is the number
+    result = np.empty(n, dtype=np.complex_)
+
+    for i in range(n):
+        dft_sum = 0 # reset the sum at each iteration of the loop
+        for k in range(n):
+            xn = arr[k]
+            exp = np.exp((-2j * math.pi * i * k) / n)
+            dft_sum = dft_sum + (xn * exp)
+        result[i] = np.round(dft_sum, 9) # round to 9 decimal places and add to resultant vector
+
+    return result # returns as a numpy array
 
 
 '''Optimized functions below'''
@@ -247,9 +281,10 @@ def dft_inverse(arr):
 def image_convert(image_name):
     img = cv2.imread(image_name, 0)
     # resize the image array to one that has size near a power of 2
-    n = 2**int(np.ceil(np.log2(max(img.shape))))
+    n = 2**int(np.ceil(np.log2(img.shape[0])))
+    a = 2**int(np.ceil(np.log2(img.shape[1])))
 
-    arr = cv2.resize(img, (n, n))
+    arr = cv2.resize(img, (n, a))
     return arr
 
 
