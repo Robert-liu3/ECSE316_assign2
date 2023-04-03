@@ -2,6 +2,7 @@ import sys
 import cv2
 import numpy as np
 from PIL import Image
+import time
 import math
 import matplotlib.pyplot as plt
 import matplotlib.colors as clr
@@ -129,7 +130,8 @@ def main():
             plt.show()
             # c_img = Image.fromarray(c_arr.astype(np.uint8))
             # c_img.save("outputimage/model_3_image.jpg")
-
+        case 4:
+            mode_4_runtimes()
         case _:
             pass
 
@@ -268,6 +270,60 @@ def image_convert(image_name):
 
     arr = cv2.resize(img, (n, n))
     return arr
+
+#method for mode 4
+
+def mode_4_runtimes():
+    # Define problem sizes to test
+    sizes = [2**n for n in range(5, 8)] # range from 32 to 128
+    
+    # Create empty arrays to store mean runtimes and standard deviations
+    naive_rm = np.zeros(len(sizes))
+    fft_rm = np.zeros(len(sizes))
+    naive_rstd = np.zeros(len(sizes))
+    fft_rstd = np.zeros(len(sizes))
+    
+    # Iterate over problem sizes and gather runtimes
+    for i, size in enumerate(sizes):
+        # Generate random 2D array of size x size
+        img_arr = np.random.rand(size, size)
+        
+        # Run naive_dft_2d 10 times and record runtimes
+        naive_runtimes = []
+        for j in range(10):
+            start_time = time.time()
+            dft_2d(img_arr)
+            end_time = time.time()
+            naive_runtimes.append(end_time - start_time)
+        
+        # Calculate mean and standard deviation of runtimes
+        naive_rm[i] = np.mean(naive_runtimes)
+        naive_rstd[i] = np.std(naive_runtimes)
+        
+        # Run fft_2d 10 times and record runtimes
+        fft_runtimes = []
+        for j in range(10):
+            start_time = time.time()
+            fft_2d(img_arr)
+            end_time = time.time()
+            fft_runtimes.append(end_time - start_time)
+        
+        # Calculate mean and standard deviation of runtimes
+        fft_rm[i] = np.mean(fft_runtimes)
+        fft_rstd[i] = np.std(fft_runtimes)
+    
+    # Plot results
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.set_title('Runtime Graph')
+    ax.errorbar(sizes, naive_rm, yerr=2*naive_rstd, label='Naive', capsize=5)
+    ax.errorbar(sizes, fft_rm, yerr=2*fft_rstd, label='FFT', capsize=5)
+    ax.set_xlabel('Problem Size')
+    ax.set_ylabel('Runtime (seconds)')
+    ax.set_xscale('log', base=2)
+    ax.set_xticks(sizes)
+    ax.set_xticklabels([str(size) for size in sizes])
+    ax.legend()
+    plt.show()
 
 
 if __name__ == '__main__':
