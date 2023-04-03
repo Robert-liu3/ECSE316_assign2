@@ -60,7 +60,7 @@ def main():
 
             #creating the graph
             fig, axs = plt.subplots(2, 3, figsize=(10, 10))
-            fig.suptitle('Compressed images at different levels of compression')
+            fig.suptitle('Compressed images at different levels')
             axs[0, 0].imshow(img_arr3, cmap='gray')
             axs[0, 0].set_title('Original Image')
             axs[0, 1].imshow(np.abs(fft_2d_img_3), norm=clr.LogNorm(vmin=5), cmap='gray')
