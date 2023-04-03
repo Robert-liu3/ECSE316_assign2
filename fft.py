@@ -52,7 +52,7 @@ def main():
             plt.show()
         case 3:
             #perform fft 2d on array
-            img_arr3 = fft_2d(image_convert(filename))
+            img_arr3 = image_convert(filename)
             fft_2d_img_3 = fft_2d(img_arr3)
 
             #convert to float
@@ -73,8 +73,8 @@ def main():
                 c_fft[int(c_fft.shape[0] * l / 100):, :] = 0
                 c_fft[:, int(c_fft.shape[1] * l / 100):] = 0
                 c_img = np.fft.ifft2(c_fft).real
-                axs[(i+1)//3, (i+1)%3].imshow(c_img, cmap='gray')
-                axs[(i+1)//3, (i+1)%3].set_title(str(l) + '% Compression')
+                axs[i//3, i%3].imshow(c_img, cmap='gray')
+                axs[i//3, i%3].set_title(str(l) + '% Compression')
 
             plt.show()
             # c_img = Image.fromarray(c_arr.astype(np.uint8))
