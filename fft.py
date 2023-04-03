@@ -125,11 +125,11 @@ def main():
                 # Similar process to mode 2 of altering
                 c_fft_flat = np.abs(c_fft).flatten()
 
-                n_zero = round(l * c_fft.shape[0]) # get percentage to remove from smallest indices
+                n_zero = round(l * c_fft.shape[0]) # get percentage to remove a portion from largest indices
 
-                smallest_indices = np.flip(c_fft_flat.argsort())[:n_zero] 
+                to_remove = np.flip(c_fft_flat.argsort())[:n_zero] 
 
-                x_indices, y_indices = np.unravel_index(smallest_indices, c_fft.shape)
+                x_indices, y_indices = np.unravel_index(to_remove, c_fft.shape)
 
                 # Loop through the arrays and set each matching index to 0
                 for x, y in zip(x_indices, y_indices):
