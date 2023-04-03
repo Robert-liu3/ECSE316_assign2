@@ -1,7 +1,6 @@
 import sys
 import cv2
 import numpy as np
-from PIL import Image
 import time
 import math
 import matplotlib.pyplot as plt
@@ -126,26 +125,26 @@ def main():
                 # Similar process to mode 2 of altering
                 c_fft_flat = np.abs(c_fft).flatten()
 
-                n_zero = round((1-l) * c_fft.shape[0])
+                n_zero = round(l * c_fft.shape[0]) # get percentage to remove from smallest indices
 
-                largest_indices = c_fft_flat.argsort()[-n_zero:]
+                smallest_indices = np.flip(c_fft_flat.argsort())[:n_zero] 
 
-                x_idx, y_idx = np.unravel_index(largest_indices, c_fft.shape)
+                x_indices, y_indices = np.unravel_index(smallest_indices, c_fft.shape)
 
-                # Loop through the arrays and set each matching index (high frequencies) to 0
-                for x, y in zip(x_idx, y_idx):
+                # Loop through the arrays and set each matching index to 0
+                for x, y in zip(x_indices, y_indices):
                     c_fft[x][y] = 0
 
-                #run inverse
-                #c_img = fft_2d_inverse(c_fft).real
+                # obtain non zero portions of matrix to use for generating csv files
+                c_compress = c_fft[np.nonzero(c_fft)]
 
-                #convert to float
+                np.savetxt(f"Level of compression {l*100}.csv", c_compress, delimiter=",")
+
+                # run inverse to reconstruct the image and extract real version to display with matplot
                 c_img = np.fft.ifft2(c_fft).real
 
                 row = i // 3
                 col = i % 3
-
-                np.savetxt(f"Compression level {l*100}", c_img, delimiter=",")
 
                 c_img = cv2.resize(c_img, original.shape[::-1]) # resize to match original image's shapes
                 axs[row, col].imshow(c_img, cmap='gray')
