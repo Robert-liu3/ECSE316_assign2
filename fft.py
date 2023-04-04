@@ -142,6 +142,9 @@ def main():
                 # obtain non zero portions of matrix to use for generating csv files
                 c_compress = c_fft[np.nonzero(c_fft)]
 
+                # print non zero coefficients for each level
+                print(f"Non-zero coefficients for compression level {l}: " + str(c_fft.shape[0] - n_zero))
+
                 np.savetxt(f"Level of compression {l*100}.csv", c_compress, delimiter=",")
 
                 # run inverse to reconstruct the image and extract real version to display with matplot
