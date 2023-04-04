@@ -27,6 +27,8 @@ def main():
                 model = sys.argv[2]
             elif (sys.argv[1] == "-i"):
                 filename = sys.argv[2]
+        case 0:
+            pass
         case _: 
             print("Error: invalid arguments found")
             pass
@@ -37,6 +39,8 @@ def main():
             #performing ftt 2d on the array
             img_arr1 = image_convert(filename)
             fft_2d_img_1 = fft_2d(img_arr1)
+
+            #fft_2d_img_1 = np.fft.fft2(img_arr1)
 
             print(fft_2d_img_1)
             print(np.fft.fft2(img_arr1))
@@ -49,7 +53,7 @@ def main():
 
             #OG image
             axs[0].imshow(img_arr1, cmap='gray')
-            axs[0].set_title('OG image') #TODO change the name lmao
+            axs[0].set_title('Original image') 
 
             #2d fft image
             axs[1].imshow(np.abs(fft_2d_img_1), norm=clr.LogNorm(vmin=5), cmap='gray')
