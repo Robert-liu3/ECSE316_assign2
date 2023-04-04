@@ -9,7 +9,7 @@ import matplotlib.colors as clr
 #parse commands
 def main():
     model = 1
-    filename = "images/moonlanding.png" #TODO Change this at the end to the root folder
+    filename = "images/moonlanding.png" # default
     num_arg = len(sys.argv)
     
     match num_arg:
@@ -49,7 +49,7 @@ def main():
             #creating the graph
             fig, axs = plt.subplots(1, 2, figsize=(10, 5))
             axs[0].imshow(original, cmap='gray')
-            axs[0].set_title('OG image') #TODO change the name lmao
+            axs[0].set_title('Original Image')
 
             #2d fft image
             axs[1].imshow(np.abs(fft_2d_img_1), norm=clr.LogNorm(vmin=5), cmap='gray')
@@ -111,7 +111,7 @@ def main():
             img_arr3 = image_convert(filename)
 
             #convert to float
-            fft_2d_img_3 = np.fft.fft2(img_arr3)
+            fft_2d_img_3 = fft_2d(img_arr3)
 
             #creating the graph
             fig, axs = plt.subplots(2, 3, figsize=(10, 10))
@@ -141,7 +141,7 @@ def main():
                 np.savetxt(f"Level of compression {l*100}.csv", c_compress, delimiter=",")
 
                 # run inverse to reconstruct the image and extract real version to display with matplot
-                c_img = np.fft.ifft2(c_fft).real
+                c_img = fft_2d_inverse(c_fft).real
 
                 row = i // 3
                 col = i % 3
@@ -151,8 +151,6 @@ def main():
                 axs[row, col].set_title(str(l * 100) + '% Compression')
                 
             plt.show()
-            # c_img = Image.fromarray(c_arr.astype(np.uint8))
-            # c_img.save("outputimage/model_3_image.jpg")
         case 4:
             mode_4_runtimes()
         case _:
